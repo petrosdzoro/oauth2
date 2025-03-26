@@ -6,6 +6,6 @@ spring:
       client:
         registration:
           google:
-            client-id: 990902295722-k7l2ai1bsr9klgt0hbqs8epa1himfbk4.apps.googleusercontent.com
-            client-secret: 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
+            client-id: 990902295722-k7l2ai1bsr9klgt0hbqs8epa1himfbk42025.apps.googleusercontent.com
+            client-secret: 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2025
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
