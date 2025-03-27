@@ -1,5 +1,9 @@
 package zw.co.esolutions.oauth.controller;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -17,8 +21,10 @@ import org.springframework.web.client.RestTemplate;
 import java.security.Principal;
 import java.time.Instant;
 
+@Slf4j
 @RestController
 public class MainController {
+    Gson gson = new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.IDENTITY).setPrettyPrinting().create();
 
     @RequestMapping("/")
     public String home(){
@@ -56,14 +62,14 @@ public class MainController {
         return response.getBody();
     }*/
 
-    @RequestMapping("/contacts")
-    public String getContacts(
+    @RequestMapping("/my-info")
+    public String myInfo(
             @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client) {
 
         // Validate token
         OAuth2AccessToken accessToken = client.getAccessToken();
-        System.out.println("Access Token: " + accessToken.getTokenValue());
-        System.out.println("Expires At: " + accessToken.getExpiresAt());
+        log.info("Access Token: {}", accessToken.getTokenValue());
+        log.info("Expires At: {}", accessToken.getExpiresAt());
 
         // API URL (fetching user's own profile)
         String resourceUrl = "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,photos";
@@ -80,6 +86,37 @@ public class MainController {
                 String.class
         );
 
-        return response.getBody();
+        String responseBody = response.getBody();
+        log.info("Response : {}",responseBody);
+        return responseBody;
+    }
+
+    @RequestMapping("/contacts")
+    public String getContacts(
+            @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client) {
+
+        // Validate token
+        OAuth2AccessToken accessToken = client.getAccessToken();
+        log.info("Access Token: {}", accessToken.getTokenValue());
+        log.info("Expires At: {}", accessToken.getExpiresAt());
+
+        // API URL (fetching user's contacts)
+        String resourceUrl = "https://people.googleapis.com/v1/people/me/connections?personFields=names,emailAddresses,phoneNumbers";
+
+        // Prepare request with ACCESS TOKEN (not ID token)
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken.getTokenValue()); // Correct: Uses access token
+
+        // Make request
+        ResponseEntity<String> response = new RestTemplate().exchange(
+                resourceUrl,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                String.class
+        );
+
+        String responseBody = response.getBody();
+        log.info("Response : {}",responseBody);
+        return responseBody;
     }
 }
