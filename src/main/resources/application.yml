@@ -14,3 +14,6 @@ spring:
             client-id: 990902295722-k7l2ai1bsr9klgt0hbqs8epa1himfbk4.apps.googleusercontent.com
             client-secret: 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
             redirect-uri: "{baseUrl}/login/oauth2/code/google"
+
+          #okta:
+          #facebook:

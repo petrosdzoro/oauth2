@@ -12,14 +12,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import zw.co.esolutions.oauth.dto.JokeResponse;
 
 import java.security.Principal;
-import java.time.Instant;
 
 @Slf4j
 @RestController
@@ -28,39 +27,17 @@ public class MainController {
 
     @RequestMapping("/")
     public String home(){
-        return "Welcome";
+        RestTemplate restTemplate = new RestTemplate();
+        JokeResponse response = restTemplate.getForObject("https://official-joke-api.appspot.com/random_joke", JokeResponse.class);
+        return gson.toJson(response);
     }
 
     @RequestMapping("/user")
-    public Principal user(Principal user){
+    public Principal user(Principal user, @AuthenticationPrincipal OidcUser oidcUser){
+        String jwtToken = oidcUser.getIdToken().getTokenValue();
+        log.info("JWT TOKEN : "+jwtToken);
         return user;
     }
-
-    /*@RequestMapping("/contacts")
-    public String getContacts(@AuthenticationPrincipal OidcUser oidcUser, @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client){
-        // String resourceUrl = "https://people.googleapis.com/v1/people/me/connections?personFields=names,emailAddresses,phoneNumbers";
-        String resourceUrl = "https://people.googleapis.com/v1/people/me?personFields=names,emailAddresses,photos";
-        String jwtToken = oidcUser.getIdToken().getTokenValue();
-        System.out.println("JWT TOKEN : "+jwtToken);
-        System.out.println("JWT TOKEN >> Expiry Time : "+client.getAccessToken().getExpiresAt());
-
-        if (client.getAccessToken().getExpiresAt().isBefore(Instant.now())) {
-            OAuth2RefreshToken refreshToken = client.getRefreshToken();
-            jwtToken = refreshToken.getTokenValue();
-            System.out.println("NEW JWT TOKEN >> Expiry Time : "+refreshToken.getExpiresAt());
-        } else {
-            System.out.println("JWT TOKEN still valid ...");
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + jwtToken);
-
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        RestTemplate restTemplate = new RestTemplate();
-
-        ResponseEntity<String> response = restTemplate.exchange(resourceUrl, HttpMethod.GET, entity, String.class);
-        return response.getBody();
-    }*/
 
     @RequestMapping("/my-info")
     public String myInfo(
